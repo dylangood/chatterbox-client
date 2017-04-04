@@ -21,7 +21,6 @@ app.send = function(message) {
 };
 
 app.fetch = function() {
-  var fetchedData;
   $.ajax({
     url: 'http://parse.sfs.hackreactor.com/chatterbox/classes/messages',
     type: 'GET',
@@ -29,8 +28,6 @@ app.fetch = function() {
     contentType: 'application/json',  // ??? <-- Change?
     success: function (data) {
       console.log('chatterbox: Message received');
-      fetchedData = data.results;
-      console.log(fetchedData);
       _.each( data.results, function( message ){
         app.renderMessage({
           username: message.username,
@@ -44,7 +41,6 @@ app.fetch = function() {
       console.error('chatterbox: Failed to get message', data);
     }
   });
-  return fetchedData;
 };
 
 app.clearMessages = function() {
@@ -54,7 +50,6 @@ app.clearMessages = function() {
 
 app.renderMessage = function(message) {
   var $chats = $('#chats');
-  translatedMess = JSON.stringify(message);
   var div = ('<div class="message"><div class="username">' + message.username + '</div><div class="chat">' + message.text + '</div></div>');
   $chats.prepend(div);
 };
