@@ -30,16 +30,19 @@ app.fetch = function() {
     success: function (data) {
       console.log('chatterbox: Message received');
       fetchedData = data.results;
-      console.log(fetchedData);
-      console.log('inside^^^^^^^^^^^^');
+      _.each( data.results, function( message ){
+        app.renderMessage({
+          username: message.username,
+          text: message.text,
+          roomname: message.roomname
+        });
+      });
     },
     error: function (data) {
       // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
       console.error('chatterbox: Failed to get message', data);
     }
   });
-        console.log('outsideeeeeee');
-  console.log(fetchedData);
   return fetchedData;
 };
 
@@ -50,8 +53,9 @@ app.clearMessages = function() {
 
 app.renderMessage = function(message) {
   var $chats = $('#chats');
-  console.log($chats);
-  $chats.append(message);
+  translatedMess = JSON.stringify(message);
+  var div = ('<div class="message"><div class="username">' + message.username + '</div><div class="chat">' + message.text + '</div></div>');
+  $chats.append(div);
 };
 
 app.renderRoom = function(string) {

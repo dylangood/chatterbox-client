@@ -87,4 +87,9 @@ form input[type=text] {
     color: #fff;
     background-color: #0090da;
 }
-
+.username{
+  margin-right: 30px;
+  margin-left: 5px;
+  margin-top: 5px;
+  float: left;
+}
