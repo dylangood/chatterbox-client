@@ -30,6 +30,7 @@ app.fetch = function() {
     success: function (data) {
       console.log('chatterbox: Message received');
       fetchedData = data.results;
+      console.log(fetchedData);
       _.each( data.results, function( message ){
         app.renderMessage({
           username: message.username,
@@ -55,9 +56,11 @@ app.renderMessage = function(message) {
   var $chats = $('#chats');
   translatedMess = JSON.stringify(message);
   var div = ('<div class="message"><div class="username">' + message.username + '</div><div class="chat">' + message.text + '</div></div>');
-  $chats.append(div);
+  $chats.prepend(div);
 };
 
 app.renderRoom = function(string) {
-  //
+  var $rooms = $('#roomSelect');
+  var option = ('<option value="' + string + '" class="room">' + string + '</option>');
+  $rooms.append(option);
 };
