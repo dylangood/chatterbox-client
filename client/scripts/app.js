@@ -75,31 +75,22 @@ app.clearMessages = function() {
 app.renderMessage = function(message) {
   var $chats = $('#chats');
   var div = ('<div class="message"><div class="username">' + message.username + '</div><div class="chat">' + message.text + '</div></div>');
-  $chats.append(div);
+  $chats.prepend(div);
 };
 
 app.renderRoom = function(room) {
   var option = ('<option value="' + room + '" class="room">' + room + '</option>');
   var $rooms = $('#roomSelect');
   if ( _.indexOf($rooms, room) < 0 ) {
-    $rooms.prepend(option);
+    $rooms.append(option);
   }
 };
 
-setTimeout( function(){
-  app.fetch( app.aggregateMessages );
-  _.each( app.messages, function(message) {
-    app.renderMessage(message);
-  });
-} , 1000);
-
 setInterval( function(){
   app.fetch();
+  app.clearMessages();
   _.each( app.messages, function(message) {
     app.renderMessage(message);
   });
-  var overflow = $('.message');
-  for ( var i = 1000; i < overflow.length; i++ ) {
-    overflow[i].remove();
-  }
-} , 10000);
+  app.messages = [];
+} , 1000);
