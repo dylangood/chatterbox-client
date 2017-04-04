@@ -21,26 +21,50 @@ app.send = function(message) {
 };
 
 app.fetch = function() {
+  var recent = new Date(Date.now() - 50000);
+  console.log(recent.toISOString());
   $.ajax({
     url: 'http://parse.sfs.hackreactor.com/chatterbox/classes/messages',
     type: 'GET',
-    data: {},
+    data: 'order=-createdAt',
+    // "createdAt":{"$gte":"' + recent.toISOString() + '"}
+    // "2017-02-08T21:34:13.062Z"
     contentType: 'application/json',  // ??? <-- Change?
     success: function (data) {
       console.log('chatterbox: Message received');
-      _.each( data.results, function( message ){
-        app.renderMessage({
-          username: message.username,
-          text: message.text,
-          roomname: message.roomname
-        });
+      app.aggregateMessages(data.results);
+      var arr = [];
+
+      _.each( data.results, function(value) {
+        arr.push(value.roomname);
       });
+      arr = _.uniq(arr);
+      _.each( arr, function(room) {
+        app.renderRoom(room);
+      });
+
     },
     error: function (data) {
       // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
       console.error('chatterbox: Failed to get message', data);
     }
   });
+};
+
+app.messages = [];
+
+app.aggregateMessages = function(messages) {
+  _.each( messages, function(message){
+    app.messages.push( {
+      username: message.username,
+      text: message.text,
+      roomname: message.roomname,
+      objectId: message.objectId,
+      createdAt: message.createdAt,
+      updatedAt: message.updatedAt
+    });
+  });
+  app.messages.reverse();
 };
 
 app.clearMessages = function() {
@@ -51,11 +75,31 @@ app.clearMessages = function() {
 app.renderMessage = function(message) {
   var $chats = $('#chats');
   var div = ('<div class="message"><div class="username">' + message.username + '</div><div class="chat">' + message.text + '</div></div>');
-  $chats.prepend(div);
+  $chats.append(div);
 };
 
-app.renderRoom = function(string) {
+app.renderRoom = function(room) {
+  var option = ('<option value="' + room + '" class="room">' + room + '</option>');
   var $rooms = $('#roomSelect');
-  var option = ('<option value="' + string + '" class="room">' + string + '</option>');
-  $rooms.append(option);
+  if ( _.indexOf($rooms, room) < 0 ) {
+    $rooms.prepend(option);
+  }
 };
+
+setTimeout( function(){
+  app.fetch( app.aggregateMessages );
+  _.each( app.messages, function(message) {
+    app.renderMessage(message);
+  });
+} , 1000);
+
+setInterval( function(){
+  app.fetch();
+  _.each( app.messages, function(message) {
+    app.renderMessage(message);
+  });
+  var overflow = $('.message');
+  for ( var i = 1000; i < overflow.length; i++ ) {
+    overflow[i].remove();
+  }
+} , 10000);
