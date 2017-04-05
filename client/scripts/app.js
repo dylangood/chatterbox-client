@@ -1,7 +1,15 @@
 var app = {};
 
+app.messages = [];
+app.rooms = [];
+
 app.init = function() {
-  //stuff
+  app.clearMessages();
+  app.fetch();
+  _.each( app.messages, function(message) {
+    app.renderMessage(message);
+  });
+  app.messages = [];
 };
 
 app.send = function(message) {
@@ -21,8 +29,7 @@ app.send = function(message) {
 };
 
 app.fetch = function() {
-  var recent = new Date(Date.now() - 50000);
-  console.log(recent.toISOString());
+//  var recent = new Date(Date.now() - 50000);
   $.ajax({
     url: 'http://parse.sfs.hackreactor.com/chatterbox/classes/messages',
     type: 'GET',
@@ -33,16 +40,7 @@ app.fetch = function() {
     success: function (data) {
       console.log('chatterbox: Message received');
       app.aggregateMessages(data.results);
-      var arr = [];
-
-      _.each( data.results, function(value) {
-        arr.push(value.roomname);
-      });
-      arr = _.uniq(arr);
-      _.each( arr, function(room) {
-        app.renderRoom(room);
-      });
-
+      app.findRooms(data.results);
     },
     error: function (data) {
       // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
@@ -51,7 +49,17 @@ app.fetch = function() {
   });
 };
 
-app.messages = [];
+app.findRooms = function(messages) {
+  _.each( messages, function(value) {
+    if ( !app.rooms.includes(value.roomname) ) {
+      app.rooms.push(value.roomname);
+    }
+  });
+  _.each( app.rooms, function(room) {
+    console.log('r');
+    app.renderRoom(room);
+  });
+};
 
 app.aggregateMessages = function(messages) {
   _.each( messages, function(message){
@@ -80,15 +88,16 @@ app.renderMessage = function(message) {
 
 app.renderRoom = function(room) {
   var option = ('<option value="' + room + '" class="room">' + room + '</option>');
-  var $rooms = $('#roomSelect');
-  if ( _.indexOf($rooms, room) < 0 ) {
-    $rooms.append(option);
+  var $roomSelect = $('#roomSelect');
+  var $selectSize = $('#roomSelect option').size();
+  if ( $selectSize < app.rooms.length ) {
+    $roomSelect.append(option);
   }
 };
 
 setInterval( function(){
-  app.fetch();
   app.clearMessages();
+  app.fetch();
   _.each( app.messages, function(message) {
     app.renderMessage(message);
   });
