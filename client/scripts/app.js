@@ -2,6 +2,7 @@ var app = {};
 
 app.messages = [];
 app.rooms = [];
+app.currentRoom = '';
 
 app.init = function() {
   app.clearMessages();
@@ -83,20 +84,24 @@ app.clearMessages = function() {
 app.renderMessage = function(message) {
   var $chats = $('#chats');
   var div = ('<div class="message"><div class="username">' + message.username + '</div><div class="chat">' + message.text + '</div></div>');
-  $chats.prepend(div);
+  if ( app.currentRoom === message.roomname ) {
+    $chats.prepend(div);
+  }
 };
 
 app.renderRoom = function(room) {
   var option = ('<option value="' + room + '" class="room">' + room + '</option>');
   var $roomSelect = $('#roomSelect');
   var $selectSize = $('#roomSelect option').size();
-  if ( $selectSize < app.rooms.length ) {
+  if ( $selectSize !== app.rooms.length ) {
     $roomSelect.append(option);
   }
 };
 
 setInterval( function(){
   app.clearMessages();
+  var selector = document.getElementById('roomSelect');
+  app.currentRoom = selector.options[selector.selectedIndex].value;
   app.fetch();
   _.each( app.messages, function(message) {
     app.renderMessage(message);
